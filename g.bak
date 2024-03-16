@@ -1,3 +1,31 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname g) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(define (create-UFO-scene height)
+  (underlay/xy (rectangle 100 150 "solid" "white") 50 5 (draw-Apple (make-Apple 20 20))))
+ 
+;(define UFO
+;  (underlay/align "center"
+;                  "top"
+  ;                (circle 10 "solid" "green"))
+                  ;(rectangle 40 4 "solid" "green"));)
+ (define-struct Apple [x y])
+(make-Apple  20 20)
+(define (draw-Apple Apple)
+  (rectangle (Apple-x Apple) (Apple-y Apple) "solid" "green"))
+
+(define-struct WorldState [x y dir score])
+
+
+
+
+
+(define (change-ws WS)
+  (make-WorldState (WorldState-x WS 500 "Right" 0))
+  
+ (define WS (make-WorldState 500 500 "Right" 0))
+(big-bang WS
+          (on-tick
+           (cond
+             [(string=? (WorldState-dir WS) "Right")(change-ws WS)]))
+          (to-draw create-UFO-scene))
