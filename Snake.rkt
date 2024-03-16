@@ -9,6 +9,7 @@
 ;Snake is one of:
 ; - '()
 ; - (cons Snake-part Snake)
+(define Snake (list '()))
 
 
 ;Structure Snake-part represents the individual part of the snake
@@ -20,12 +21,13 @@
 ; - Down
 ; - Left
 (define-struct Snake-part [x y direction])
-
+(make-Snake-part  20 20 "Right")
 
 
 ;Structure Apple represents the apple, if snake touches apple it grows by one Snake-part
 ;Apple consists of coordinates(x y),
 (define-struct Apple [x y])
+(make-Apple  20 20)
 
 
 
@@ -35,9 +37,23 @@
 ;Score is the amount of points player has gained
 ;Score is a Number >= 0
 
-;State represents the current state of the game
+;GameState represents the current state of the game
 ;State is one of:
 ; - Before-game
 ; - Game
 ; - Game-over
-(define Game-State [score state])
+(define-struct GameState [score state])
+(make-GameState  0 "Before-game")
+
+
+
+
+
+
+
+(cons (make-Snake-part  20 20 "Right") Snake)
+
+
+
+
+
