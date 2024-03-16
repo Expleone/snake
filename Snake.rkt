@@ -12,17 +12,32 @@
 
 
 ;Structure Snake-part represents the individual part of the snake
-;Snake-part consists of coordinates, direction
+;Snake-part consists of coordinates(x y), direction
+
+;Direction is one of:
+; - Up
+; - Right
+; - Down
+; - Left
 (define-struct Snake-part [x y direction])
 
 
 
 ;Structure Apple represents the apple, if snake touches apple it grows by one Snake-part
-;Apple consists of coordinates,
+;Apple consists of coordinates(x y),
 (define-struct Apple [x y])
 
 
 
 ;Structure Game-State represents the current state of the game
 ;It consists of score, state
+
+;Score is the amount of points player has gained
+;Score is a Number >= 0
+
+;State represents the current state of the game
+;State is one of:
+; - Before-game
+; - Game
+; - Game-over
 (define Game-State [score state])
