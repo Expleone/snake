@@ -51,7 +51,7 @@
 ;WS -> Image
 ;Will draw everything for the game
 (define (ws-draw WS)
-  (draw-snake (WorldState-snake WS))) 
+  (place-image (draw-score WS) 500 20 (draw-snake (WorldState-snake WS)))) 
 
 
 
@@ -64,17 +64,26 @@
                  (draw-snake (rest snake)))]))
 
 
+;WorldState -> Image
+;Will draw the player's score
+(define (draw-score WS)
+  (text (number->string (WorldState-score WS)) 42 "orange"))
+
 
 ;WorldState -> WorldState
 ;Will change the WorldState every tick
 (define (change-ws WS)
   (cond
-    [(string=? (snakeP-dir (first (WorldState-snake WS))) "Right")(make-WorldState (cons (make-snakeP (+ 20 (snakeP-x (first (WorldState-snake WS)))) (snakeP-y (first (WorldState-snake WS))) (snakeP-dir (first (WorldState-snake WS)))) (cons (make-snakeP (+ 20 (snakeP-x (second (WorldState-snake WS)))) (snakeP-y (second (WorldState-snake WS))) (snakeP-dir (second (WorldState-snake WS)))) '())) (WorldState-score WS))]))
+    [(string=? (snakeP-dir (first (WorldState-snake WS))) "Right")
+     (make-WorldState (cons (make-snakeP (+ 20 (snakeP-x (first (WorldState-snake WS))))
+             (snakeP-y (first (WorldState-snake WS))) (snakeP-dir (first (WorldState-snake WS))))
+             (cons (make-snakeP (+ 20 (snakeP-x (second (WorldState-snake WS)))) (snakeP-y (second (WorldState-snake WS)))
+                                (snakeP-dir (second (WorldState-snake WS)))) '())) (WorldState-score WS))]))
 
 
 
 
 ;The main Handler
-(big-bang (make-WorldState (cons (make-snakeP 500 500 "Right")(cons (make-snakeP 440 500 "Right") '())) 0)
+(big-bang (make-WorldState (cons (make-snakeP 500 500 "Right")(cons (make-snakeP 478 500 "Right") '())) 0)
           [on-tick change-ws 0.25]
           [to-draw ws-draw])
