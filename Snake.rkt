@@ -54,7 +54,9 @@
 (define (ws-draw WS)
   (cond
     [(string=? (WorldState-status WS) "Start-screen")
-     (place-image (text "Press Space Bar to START" 42 "orange") 400 400 (rectangle 800 600 "solid" "white"))]
+     (place-image (text "Press Space Bar to START" 42 "orange") 400 200 (rectangle 800 600 "solid" "white"))]
+    [(string=? (WorldState-status WS) "Game-over")
+     (place-image (text "Game over Press R to RESTART" 42 "orange") 400 200 (rectangle 800 600 "solid" "white"))]
     [(string=? (WorldState-status WS) "Game")
      (place-image (draw-score WS) 400 20                                               ;Score
                   (place-image (rectangle (- block-size 2) (- block-size 2) "solid" "red") (Apple-x (WorldState-apple WS)) (Apple-y (WorldState-apple WS))   ;Apple
@@ -82,6 +84,8 @@
 (define (tick-handler WS)
   (cond
    [(string=? (WorldState-status WS) "Start-screen")
+    (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
+   [(string=? (WorldState-status WS) "Game-over")
     (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
    [(string=? (WorldState-status WS) "Game")
     (cond
@@ -118,6 +122,9 @@
   (cond
     [(string=? (WorldState-status WS) "Start-screen")
      (if (key=? key " ") (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) "Game")
+                         (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS)))]
+    [(string=? (WorldState-status WS) "Game-over")
+     (if (key=? key "r") (make-WorldState starting-snake "Right" 0 (generate-new-apple starting-snake) "Game")
                          (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS)))]
     [(string=? (WorldState-status WS) "Game")
          (cond [(or (key=? key "up") (key=? key "w"))(cond
