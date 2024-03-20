@@ -12,23 +12,16 @@
 (define snake (list '()))
 
 
-;Structure snakeP represents the individual part of the snake
-;snakeP consists of coordinates(x y), direction
-
-;dir represents the direction of individual snake part
-;dir is one of:
-; - Up
-; - Right
-; - Down
-; - Left
-(define-struct snakeP [x y dir])
-(make-snakeP  20 20 "Right")
+;Structure SnakePart represents the individual part of the snake
+;SnakePart consists of coordinates(x y), direction
+(define-struct SnakePart [x y])
+(make-SnakePart  20 20)
 
 
 ;Structure Apple represents the apple, if snake touches apple it grows by one Snake-part
 ;Apple consists of coordinates(x y),
 (define-struct Apple [x y])
-(make-Apple  20 20)
+(define AApple (make-Apple  20 20))
 
 
 
@@ -38,29 +31,36 @@
 ;Score is the amount of points player has gained
 ;Score is a Number >= 0
 
-;GameState represents the current state of the game
-;State is one of:
-; - Before-game
+;dir represents the direction of individual snake part
+;dir is one of:
+; - Up
+; - Right
+; - Down
+; - Left
+
+;status represents the current state of the game
+;status is one of:
+; - Start-screen
 ; - Game
 ; - Game-over
-(define-struct WorldState [snake score])
-(make-WorldState (cons (make-snakeP 5 5 "Right") (cons (make-snakeP 30 4 "Left") '())) 900)
+(define-struct WorldState [snake dir score apple status])
+(make-WorldState (cons (make-SnakePart 5 5) (cons (make-SnakePart 30 4) '())) "Right" 900 (make-Apple 60 60) "Game")
 
 
 
 ;WS -> Image
 ;Will draw everything for the game
 (define (ws-draw WS)
-  (place-image (draw-score WS) 500 20 (draw-snake (WorldState-snake WS)))) 
+  (place-image (draw-score WS) 400 20 (draw-snake (WorldState-snake WS)))) 
 
 
 
 ;Snake -> Image
 ;Will draw every element of the snake
 (define (draw-snake snake)
-  (cond [(empty? snake) (rectangle 1000 1000 "solid" "white")]
+  (cond [(empty? snake) (rectangle 800 600 "solid" "white")]
         [(cons? snake)
-          (place-image (rectangle 20 20 "solid" "green") (snakeP-x (first snake)) (snakeP-y (first snake))
+          (place-image (rectangle 18 18 "solid" "green") (SnakePart-x (first snake)) (SnakePart-y (first snake))
                  (draw-snake (rest snake)))]))
 
 
@@ -72,18 +72,79 @@
 
 ;WorldState -> WorldState
 ;Will change the WorldState every tick
-(define (change-ws WS)
+(define (tick-handler WS)
   (cond
-    [(string=? (snakeP-dir (first (WorldState-snake WS))) "Right")
-     (make-WorldState (cons (make-snakeP (+ 20 (snakeP-x (first (WorldState-snake WS))))
-             (snakeP-y (first (WorldState-snake WS))) (snakeP-dir (first (WorldState-snake WS))))
-             (cons (make-snakeP (+ 20 (snakeP-x (second (WorldState-snake WS)))) (snakeP-y (second (WorldState-snake WS)))
-                                (snakeP-dir (second (WorldState-snake WS)))) '())) (WorldState-score WS))]))
+    [(string=? (WorldState-dir WS) "Right")(make-WorldState (moveRight (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
+    [(string=? (WorldState-dir WS) "Left")(make-WorldState (moveLeft (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
+    [(string=? (WorldState-dir WS) "Down")(make-WorldState (moveDown (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
+    [(string=? (WorldState-dir WS) "Up")(make-WorldState (moveUp (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]))
 
 
+;snake -> WorldState
+(define (moveRight snake)
+     (move snake (cons (make-SnakePart (+ (SnakePart-x (first snake)) 20) (SnakePart-y (first snake))) '())))
+;snake -> WorldState
+(define (moveLeft snake)
+     (move snake (cons (make-SnakePart (- (SnakePart-x (first snake)) 20) (SnakePart-y (first snake))) '())))
+;snake -> WorldState
+(define (moveDown snake)
+     (move snake (cons (make-SnakePart (SnakePart-x (first snake)) (+ (SnakePart-y (first snake)) 20)) '())))
+;snake -> WorldState
+(define (moveUp snake)
+     (move snake (cons (make-SnakePart (SnakePart-x (first snake)) (- (SnakePart-y (first snake)) 20)) '())))
+
+;snake -> WorldState
+(define (move snake snake-copy)
+  (cond
+    [(= (length snake) 1) (reverse snake-copy)]
+    [(cons? snake)
+     (move (rest snake) (append (cons (make-SnakePart (SnakePart-x (first snake)) (SnakePart-y (first snake))) '()) snake-copy))]))
+
+;WorldState -> WorldState
+;Will check what keys are being pressed
+(define (key-handler WS key)
+  (cond [(or (key=? key "up") (key=? key "w"))(cond
+                           [(= (- (SnakePart-y (first (WorldState-snake WS))) 20) (SnakePart-y (second (WorldState-snake WS)))) WS]
+                           [else (make-WorldState (WorldState-snake WS) "Up" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
+        [(or (key=? key "down") (key=? key "s")) (cond
+                           [(= (+ (SnakePart-y (first (WorldState-snake WS))) 20) (SnakePart-y (second (WorldState-snake WS)))) WS]
+                           [else (make-WorldState (WorldState-snake WS) "Down" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
+        [(or (key=? key "left") (key=? key "a")) (cond
+                           [(= (- (SnakePart-x (first (WorldState-snake WS))) 20) (SnakePart-x (second (WorldState-snake WS)))) WS]
+                           [else (make-WorldState (WorldState-snake WS) "Left" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
+        [(or (key=? key "right") (key=? key "d")) (cond
+                           [(= (+ (SnakePart-x (first (WorldState-snake WS))) 20) (SnakePart-x (second (WorldState-snake WS)))) WS]
+                           [else (make-WorldState (WorldState-snake WS) "Right" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
+        [else WS]))
 
 
 ;The main Handler
-(big-bang (make-WorldState (cons (make-snakeP 500 500 "Right")(cons (make-snakeP 478 500 "Right") '())) 0)
-          [on-tick change-ws 0.25]
-          [to-draw ws-draw])
+(big-bang (make-WorldState (cons (make-SnakePart 510 510)(cons (make-SnakePart 490 510)(cons (make-SnakePart 470 510) '()))) "Right" 0 (make-Apple 60 60) "Game")
+  [on-tick tick-handler 0.25]
+  [on-key key-handler]
+  [to-draw ws-draw])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
