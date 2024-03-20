@@ -96,33 +96,25 @@
     ]))
 
 
-;snake -> snake
+;snake -> WorldState
 (define (moveRight snake)
      (move snake (cons (make-SnakePart (+ (SnakePart-x (first snake)) block-size) (SnakePart-y (first snake))) '())))
-;snake -> snake
+;snake -> WorldState
 (define (moveLeft snake)
      (move snake (cons (make-SnakePart (- (SnakePart-x (first snake)) block-size) (SnakePart-y (first snake))) '())))
-;snake -> snake
+;snake -> WorldState
 (define (moveDown snake)
      (move snake (cons (make-SnakePart (SnakePart-x (first snake)) (+ (SnakePart-y (first snake)) block-size)) '())))
-;snake -> snake
+;snake -> WorldState
 (define (moveUp snake)
      (move snake (cons (make-SnakePart (SnakePart-x (first snake)) (- (SnakePart-y (first snake)) block-size)) '())))
 
-;snake -> snake
+;snake -> WorldState
 (define (move snake snake-copy)
   (cond
     [(= (length snake) 1) (reverse snake-copy)]
     [(cons? snake)
      (move (rest snake) (append (cons (make-SnakePart (SnakePart-x (first snake)) (SnakePart-y (first snake))) '()) snake-copy))]))
-
-;WorldState -> Boolian
-(define (horizontal? WS)
-  (or (string=? (WorldState-dir WS) "Right") (string=? (WorldState-dir WS) "Left")))
-
-;WorldState -> Boolian
-(define (vertical? WS)
-  (or (string=? (WorldState-dir WS) "Up") (string=? (WorldState-dir WS) "Down")))
 
 ;WorldState -> WorldState
 ;Will check what keys are being pressed
@@ -136,17 +128,17 @@
                          (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS)))]
     [(string=? (WorldState-status WS) "Game")
          (cond [(or (key=? key "up") (key=? key "w"))(cond
-                                                       [(horizontal? WS) (make-WorldState (WorldState-snake WS) "Up" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
-                                                       [else WS])]
+                                                       [(= (- (SnakePart-y (first (WorldState-snake WS))) block-size) (SnakePart-y (second (WorldState-snake WS)))) WS]
+                                                       [else (make-WorldState (WorldState-snake WS) "Up" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
                [(or (key=? key "down") (key=? key "s")) (cond
-                                                          [(horizontal? WS) (make-WorldState (WorldState-snake WS) "Down" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
-                                                          [else WS])]
+                                                          [(= (+ (SnakePart-y (first (WorldState-snake WS))) block-size) (SnakePart-y (second (WorldState-snake WS)))) WS]
+                                                          [else (make-WorldState (WorldState-snake WS) "Down" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
                [(or (key=? key "left") (key=? key "a")) (cond
-                                                          [(vertical? WS) (make-WorldState (WorldState-snake WS) "Left" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
-                                                          [else WS])]
+                                                          [(= (- (SnakePart-x (first (WorldState-snake WS))) block-size) (SnakePart-x (second (WorldState-snake WS)))) WS]
+                                                          [else (make-WorldState (WorldState-snake WS) "Left" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
                [(or (key=? key "right") (key=? key "d")) (cond
-                                                           [(vertical? WS) (make-WorldState (WorldState-snake WS) "Right" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))]
-                                                           [else WS])]
+                                                           [(= (+ (SnakePart-x (first (WorldState-snake WS))) block-size) (SnakePart-x (second (WorldState-snake WS)))) WS]
+                                                           [else (make-WorldState (WorldState-snake WS) "Right" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS))])]
                [else WS])]))
 
 
