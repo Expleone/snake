@@ -123,8 +123,8 @@
   (make-WorldState (rest (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)))
 (define (reverse-snake WS snake)
   (make-WorldState (reverse snake) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)))
-(define (make-dir WS new-dir)
-  ((make-WorldState (WorldState-snake WS) new-dir (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))))
+(define (make_dir WS new-dir)
+  (make-WorldState (WorldState-snake WS) new-dir (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS)))
 
 
 
@@ -225,16 +225,16 @@
              WS)]
         [(string=? (WorldState-status WS) "Game")
          (cond [(or (key=? key "up") (key=? key "w"))(if (horizontal? WS)
-                                                         (make-WorldState (WorldState-snake WS) "Up" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))
+                                                         (make_dir WS "Up")
                                                          WS)]
                [(or (key=? key "down") (key=? key "s"))(if (horizontal? WS)
-                                                           (make-WorldState (WorldState-snake WS) "Down" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))
+                                                           (make_dir WS "Down")
                                                            WS)]
                [(or (key=? key "left") (key=? key "a")) (if (vertical? WS)
-                                                            (make-WorldState (WorldState-snake WS) "Left" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))
+                                                            (make_dir WS "Left")
                                                             WS)]
                [(or (key=? key "right") (key=? key "d")) (if (vertical? WS)
-                                                             (make-WorldState (WorldState-snake WS) "Right" (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))
+                                                             (make_dir WS "Right")
                                                              WS)]
                [else WS])])
       WS))
