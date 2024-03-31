@@ -67,7 +67,6 @@
 ;(make-WorldState (cons (make-SnakePart 5 5) (cons (make-SnakePart 30 4) '())) "Right" 900 (make-Apple 60 60) "Game" 0 -1)
 
 
-
 ;WS -> Image
 ;Will draw everything for the game
 (define (ws-draw WS)
@@ -118,16 +117,25 @@
   (text (number->string (WorldState-score WS)) 42 "orange"))
 
 
+(define (tick-counter WS)
+  (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (+ (WorldState-tick WS) 1) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)))
+(define (rest-snake WS)
+  (make-WorldState (rest (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)))
+(define (reverse-snake WS snake)
+  (make-WorldState (reverse snake) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)))
+(define (make-dir WS new-dir)
+  ((make-WorldState (WorldState-snake WS) new-dir (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-tick WS) (WorldState-buttons WS) (WorldState-regime WS))))
+
+
+
 ;WorldState -> WorldState
 ;Will change the WorldState every tick
 (define (tick-handler WS)
   (cond
-   [(string=? (WorldState-status WS) "Start-screen")
-    (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (+ (WorldState-tick WS) 1) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS))]
-   [(string=? (WorldState-status WS) "Game-over")
-    (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (+ (WorldState-tick WS) 1) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS))]
+   [(string=? (WorldState-status WS) "Start-screen")(tick-counter WS)]
+   [(string=? (WorldState-status WS) "Game-over")(tick-counter WS)]
    [(string=? (WorldState-status WS) "Game")
-    (move (make-WorldState (WorldState-snake WS) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (+ (WorldState-tick WS) 1) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)) '() False)
+    (move (tick-counter WS) '() False)
     ]))
 
 ;(define-struct SnakeCopy [copy apple-state])
@@ -144,7 +152,7 @@
     [(= (length (WorldState-snake WS)) (cond [apple-state 0] [else 1])) (WorldState-status WS)]
     [(or (or (< (SnakePart-x snake-head) 70) (> (SnakePart-x snake-head) 730)) (or (< (SnakePart-y snake-head) 90) (> (SnakePart-y snake-head) 570))) "Game-over"]
     [(and (= (SnakePart-x (first (WorldState-snake WS))) (SnakePart-x snake-head)) (= (SnakePart-y (first (WorldState-snake WS))) (SnakePart-y snake-head))) "Game-over"]
-    [(cons? (WorldState-snake WS))(status? (make-WorldState (rest (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)) snake-head apple-state)]))
+    [(cons? (WorldState-snake WS))(status? (rest-snake WS) snake-head apple-state)]))
 
 ;Determines the player's score
 ;Number, Boolean -> Number
@@ -180,13 +188,17 @@
                                                         
                                 (define snake (WorldState-snake WS))
                                 (define apple (WorldState-apple WS))
-                                (define apple-state (is-apple-eaten? new-snake-head apple)))
-                           (move (make-WorldState snake (WorldState-dir WS) (score-update (WorldState-score WS) apple-state) (generate-apple snake apple apple-state) (status? WS new-snake-head apple-state) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)) (cons new-snake-head '()) apple-state)
+                                (define apple-state (is-apple-eaten? new-snake-head apple))
+                                (define new-apple (generate-apple snake apple apple-state))
+                                (define new-status (status? WS new-snake-head apple-state))
+                                (define new-score (score-update (WorldState-score WS) apple-state))
+                                (define new-snake (cons new-snake-head '())))
+                           (move (make-WorldState snake (WorldState-dir WS) new-score new-apple new-status (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)) new-snake apple-state)
                                
                           )]
-    [(= (length (WorldState-snake WS)) (cond [apple-state 0] [else 1])) (make-WorldState (reverse snake-copy) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS))]
+    [(= (length (WorldState-snake WS)) (cond [apple-state 0] [else 1])) (reverse-snake WS snake-copy)]
     [(cons? (WorldState-snake WS))
-     (move (make-WorldState (rest (WorldState-snake WS)) (WorldState-dir WS) (WorldState-score WS) (WorldState-apple WS) (WorldState-status WS) (WorldState-tick WS) (WorldState-LKUT WS) (WorldState-buttons WS) (WorldState-regime WS)) (append (cons (make-SnakePart (SnakePart-x (first (WorldState-snake WS))) (SnakePart-y (first (WorldState-snake WS)))) '()) snake-copy) apple-state)])
+     (move (rest-snake WS) (append (cons (make-SnakePart (SnakePart-x (first (WorldState-snake WS))) (SnakePart-y (first (WorldState-snake WS)))) '()) snake-copy) apple-state)])
   )
 
 ;WorldState -> Boolean
